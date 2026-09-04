@@ -4,6 +4,7 @@ export {
     SOCIOS_ENDPOINT,
     fetchSocios,
     listSocios,
+    listSociosPaginated,
     getSocioById,
     createSocio,
     updateSocio,

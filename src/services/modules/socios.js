@@ -5,8 +5,17 @@ export const SOCIOS_ENDPOINT = "/socios";
 function normalizeCollection(payload) {
 	if (Array.isArray(payload)) return payload;
 	if (Array.isArray(payload?.data)) return payload.data;
-	if (Array.isArray(payload?.data?.data)) return payload.data.data;
 	return [];
+}
+
+function normalizeMeta(payload) {
+	const meta = payload?.pagination;
+	const currentPage = Number(meta?.current_page) || 1;
+	const lastPage = Number(meta?.last_page) || 1;
+	const perPage = Number(meta?.per_page) || normalizeCollection(payload).length || 1;
+	const total = Number(meta?.total) ?? normalizeCollection(payload).length;
+
+	return { currentPage, lastPage, perPage, total };
 }
 
 export async function fetchSocios(params = {}) {
@@ -17,6 +26,15 @@ export async function fetchSocios(params = {}) {
 export async function listSocios(params = {}) {
 	const payload = await fetchSocios(params);
 	return normalizeCollection(payload);
+}
+
+export async function listSociosPaginated(params = {}) {
+	const payload = await fetchSocios(params);
+	console.log("Fetched socios payload:", payload);
+	return {
+		items: normalizeCollection(payload),
+		meta: normalizeMeta(payload),
+	};
 }
 
 export async function getSocioById(id) {

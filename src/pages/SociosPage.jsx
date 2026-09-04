@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { SocioCreateModal } from "../components/SocioCreateModal";
 import { SocioDetailsModal } from "../components/SocioDetailsModal";
-import { createSocio, listSocios, getSocioById } from "../services";
+import { SociosFilters } from "../components/SociosFilters";
+import { Pagination } from "../components/Pagination";
+import { createSocio, listSociosPaginated, getSocioById } from "../services";
+import { Eye,  Pencil, Trash } from 'lucide-react';
+
+const PER_PAGE = 10;
 
 function getPhoneList(telefonos) {
   if (!Array.isArray(telefonos) || telefonos.length === 0) {
@@ -25,12 +30,34 @@ export function SociosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activo, setActivo] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ currentPage: 1, lastPage: 1, total: 0 });
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+    return () => clearTimeout(timeoutId);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, activo]);
+
   const loadSocios = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await listSocios();
-      setSocios(response);
+      const params = {
+        page,
+        per_page: PER_PAGE,
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(activo ? { activo } : {}),
+      };
+      const { items, meta: responseMeta } = await listSociosPaginated(params);
+      setSocios(items);
+      setMeta(responseMeta);
     } catch (err) {
       setError(err?.message || "No fue posible cargar socios.");
     } finally {
@@ -40,7 +67,7 @@ export function SociosPage() {
 
   useEffect(() => {
     loadSocios();
-  }, []);
+  }, [page, debouncedSearch, activo]);
 
   const handleCreateSocio = async (form) => {
     try {
@@ -64,8 +91,6 @@ export function SociosPage() {
         },
         image: form.image || null,
       };
-
-      console.log("Creating socio with payload:", payload);
 
       await createSocio(payload);
       setIsModalOpen(false);
@@ -107,6 +132,15 @@ export function SociosPage() {
             {submitError}
           </p>
         )}
+
+        <div className="mt-6">
+          <SociosFilters
+            search={search}
+            onSearchChange={setSearch}
+            activo={activo}
+            onActivoChange={setActivo}
+          />
+        </div>
 
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
           {loading && (
@@ -162,11 +196,25 @@ export function SociosPage() {
                           ))}
                         </ul>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 gap-1 flex">
+                        {/* Boton de visualizacion de detalles de socio */}   
                         <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
                           onClick={() => handleShowDetails(socio)}
                         >
-                          Ver Detalles
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        {/* Boton de edicion de datos para socio */}  
+                        <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+                          onClick={() => handleEditSocio(socio)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+
+                        {/* Boton de eliminacion de datos para socio */}  
+                        <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+                          onClick={() => handleDeleteSocio(socio)}
+                        >
+                          <Trash className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -175,6 +223,15 @@ export function SociosPage() {
               </tbody>
               </table>
             </div>
+          )}
+
+          {!loading && !error && (
+            <Pagination
+              currentPage={meta.currentPage}
+              lastPage={meta.lastPage}
+              total={meta.total}
+              onPageChange={setPage}
+            />
           )}
         </div>
       </section>
