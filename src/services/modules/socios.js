@@ -1,22 +1,7 @@
 import { httpClient } from "../http/client";
+import { normalizeCollection, normalizePaginationMeta } from "../http/normalize";
 
 export const SOCIOS_ENDPOINT = "/socios";
-
-function normalizeCollection(payload) {
-	if (Array.isArray(payload)) return payload;
-	if (Array.isArray(payload?.data)) return payload.data;
-	return [];
-}
-
-function normalizeMeta(payload) {
-	const meta = payload?.pagination;
-	const currentPage = Number(meta?.current_page) || 1;
-	const lastPage = Number(meta?.last_page) || 1;
-	const perPage = Number(meta?.per_page) || normalizeCollection(payload).length || 1;
-	const total = Number(meta?.total) ?? normalizeCollection(payload).length;
-
-	return { currentPage, lastPage, perPage, total };
-}
 
 export async function fetchSocios(params = {}) {
 	const { data } = await httpClient.get(SOCIOS_ENDPOINT, { params });
@@ -30,10 +15,9 @@ export async function listSocios(params = {}) {
 
 export async function listSociosPaginated(params = {}) {
 	const payload = await fetchSocios(params);
-	console.log("Fetched socios payload:", payload);
 	return {
 		items: normalizeCollection(payload),
-		meta: normalizeMeta(payload),
+		meta: normalizePaginationMeta(payload),
 	};
 }
 
