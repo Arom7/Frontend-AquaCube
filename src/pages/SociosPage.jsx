@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SocioCreateModal } from "../components/SocioCreateModal";
 import { SocioDetailsModal } from "../components/SocioDetailsModal";
-import { SociosFilters } from "../components/SociosFilters";
-import { Pagination } from "../components/Pagination";
+import { ListFilters } from "../components/common/ListFilters";
+import { Pagination } from "../components/common/Pagination";
 import { createSocio, listSociosPaginated, getSocioById } from "../services";
+import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { Eye,  Pencil, Trash } from 'lucide-react';
 
 const PER_PAGE = 10;
@@ -21,53 +22,29 @@ function getPhoneList(telefonos) {
 }
 
 export function SociosPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [socios, setSocios] = useState([]);
   const [isModalDetailsOpen, setIsModalDetailsOpen] = useState(false);
   const [selectedSocio, setSelectedSocio] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activo, setActivo] = useState("");
-  const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState({ currentPage: 1, lastPage: 1, total: 0 });
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => setDebouncedSearch(search.trim()), 400);
-    return () => clearTimeout(timeoutId);
-  }, [search]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, activo]);
-
-  const loadSocios = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const params = {
-        page,
-        per_page: PER_PAGE,
-        ...(debouncedSearch ? { search: debouncedSearch } : {}),
-        ...(activo ? { activo } : {}),
-      };
-      const { items, meta: responseMeta } = await listSociosPaginated(params);
-      setSocios(items);
-      setMeta(responseMeta);
-    } catch (err) {
-      setError(err?.message || "No fue posible cargar socios.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSocios();
-  }, [page, debouncedSearch, activo]);
+  const {
+    items: socios,
+    meta,
+    loading,
+    error,
+    page,
+    setPage,
+    search,
+    setSearch,
+    filters,
+    setFilter,
+    reload: loadSocios,
+  } = usePaginatedResource({
+    fetchPage: listSociosPaginated,
+    perPage: PER_PAGE,
+    initialFilters: { activo: "" },
+  });
 
   const handleCreateSocio = async (form) => {
     try {
@@ -134,11 +111,23 @@ export function SociosPage() {
         )}
 
         <div className="mt-6">
-          <SociosFilters
+          <ListFilters
             search={search}
             onSearchChange={setSearch}
-            activo={activo}
-            onActivoChange={setActivo}
+            searchPlaceholder="Buscar por nombre, apellidos o carnet..."
+            selects={[
+              {
+                id: "activo",
+                label: "Estado",
+                value: filters.activo,
+                onChange: (value) => setFilter("activo", value),
+                options: [
+                  { value: "", label: "Todos" },
+                  { value: "true", label: "Activos" },
+                  { value: "false", label: "Inactivos" },
+                ],
+              },
+            ]}
           />
         </div>
 
@@ -198,20 +187,20 @@ export function SociosPage() {
                       </td>
                       <td className="px-4 py-3 gap-1 flex">
                         {/* Boton de visualizacion de detalles de socio */}   
-                        <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+                        <button className="rounded-xl bg-white border border-brand-secondary px-3 py-2 text-xs font-semibold text-brand-secondary transition hover:bg-brand-secondary hover:text-white"
                           onClick={() => handleShowDetails(socio)}
                         >
                           <Eye className="h-4 w-4" />
                         </button>
                         {/* Boton de edicion de datos para socio */}  
-                        <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+                        <button className="rounded-xl bg-white border border-sky-500 px-3 py-2 text-xs font-semibold text-sky-500 transition hover:bg-blue-500 hover:text-white"
                           onClick={() => handleEditSocio(socio)}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
 
                         {/* Boton de eliminacion de datos para socio */}  
-                        <button className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+                        <button className="rounded-xl bg-white border border-red-600 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
                           onClick={() => handleDeleteSocio(socio)}
                         >
                           <Trash className="h-4 w-4" />
@@ -231,6 +220,7 @@ export function SociosPage() {
               lastPage={meta.lastPage}
               total={meta.total}
               onPageChange={setPage}
+              itemLabel="socios"
             />
           )}
         </div>
