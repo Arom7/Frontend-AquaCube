@@ -20,10 +20,12 @@ export function PropiedadCreateField({
 	if (type === "switch") {
 		return (
 			<div className={className}>
-				<span className="mb-1.5 block text-sm font-medium text-slate-700">
-					{label}
-					{optional ? " (opcional)" : ""}
-				</span>
+				{label && (
+					<span className="mb-1.5 block text-sm font-medium text-slate-700">
+						{label}
+						{optional ? " (opcional)" : ""}
+					</span>
+				)}
 				<button
 					type="button"
 					id={id}

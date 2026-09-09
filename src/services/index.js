@@ -13,7 +13,9 @@ export {
 
 export {
     PROPIEDADES_ENDPOINT,
+    fetchPropiedades,
     listPropiedades,
+    listPropiedadesPaginated,
     getPropiedadById,
     createPropiedad,
     updatePropiedad,
