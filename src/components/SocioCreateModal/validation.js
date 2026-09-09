@@ -36,7 +36,9 @@ export function validateSocioForm(form) {
 		errors.carnet_identidad = "Ingresa un carnet de identidad válido.";
 	}
 
-	if (form.email.trim() && !isValidEmail(form.email.trim())) {
+	if(!form.email.trim()) {
+		errors.email = "El correo electronico es obligatorio.";
+	}else if(!isValidEmail(form.email.trim())) {
 		errors.email = "Ingresa un correo electronico valido.";
 	}
 

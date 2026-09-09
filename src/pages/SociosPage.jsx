@@ -3,6 +3,7 @@ import { SocioCreateModal } from "../components/SocioCreateModal";
 import { SocioDetailsModal } from "../components/SocioDetailsModal";
 import { ListFilters } from "../components/common/ListFilters";
 import { Pagination } from "../components/common/Pagination";
+import { AlertModal } from "../components/common/AlertModal";
 import { createSocio, listSociosPaginated, getSocioById } from "../services";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { Eye,  Pencil, Trash } from 'lucide-react';
@@ -27,6 +28,7 @@ export function SociosPage() {
   const [selectedSocio, setSelectedSocio] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const {
     items: socios,
@@ -71,6 +73,7 @@ export function SociosPage() {
 
       await createSocio(payload);
       setIsModalOpen(false);
+      setSuccessMessage("Socio registrado correctamente.");
       await loadSocios();
     } catch (err) {
       setSubmitError(err?.message || "No fue posible registrar el socio.");
@@ -81,7 +84,6 @@ export function SociosPage() {
 
   const handleShowDetails = async (socio) => {
     const fullSocio = await getSocioById(socio.id);
-    console.log("Full socio details:", fullSocio.data);
     setSelectedSocio(fullSocio.data);
     setIsModalDetailsOpen(true);
   };
@@ -103,12 +105,6 @@ export function SociosPage() {
             Registrar un nuevo socio
           </button>
         </div>
-
-        {submitError && (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {submitError}
-          </p>
-        )}
 
         <div className="mt-6">
           <ListFilters
@@ -241,6 +237,21 @@ export function SociosPage() {
         isOpen={isModalDetailsOpen}
         onClose={() => setIsModalDetailsOpen(false)}
         socio={selectedSocio}
+      />
+
+      <AlertModal
+        isOpen={Boolean(successMessage)}
+        type="success"
+        message={successMessage}
+        onClose={() => setSuccessMessage("")}
+        autoCloseMs={3000}
+      />
+
+      <AlertModal
+        isOpen={Boolean(submitError)}
+        type="error"
+        message={submitError}
+        onClose={() => setSubmitError("")}
       />
     </>
   );
