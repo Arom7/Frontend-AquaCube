@@ -22,5 +22,11 @@ export {
     deletePropiedad
 } from "./modules/propiedad";
 
-export { listMedidores } from "./modules/medidores";
+export { 
+    MEDIDORES_ENDPOINT,
+    listMedidores,
+    listMedidoresPaginated,
+    createMedidor
+} from "./modules/medidores";
+
 export { listConsumos } from "./modules/consumos";
