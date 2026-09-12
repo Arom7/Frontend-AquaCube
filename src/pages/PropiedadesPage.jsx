@@ -7,12 +7,14 @@ import { createPropiedad } from "../services";
 import { ListFilters } from "../components/common/ListFilters";
 import { Pagination } from "../components/common/Pagination";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
+import { AlertModal } from "../components/common/AlertModal";
 
 const PER_PAGE = 10;
 
 export function PropiedadesPage() {
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDetailsOpen, setIsModalDetailsOpen] = useState(false);
   const [selectedPropiedad, setSelectedPropiedad] = useState(null);
@@ -49,6 +51,7 @@ export function PropiedadesPage() {
 
       await createPropiedad(payload);
       setIsModalOpen(false);
+      setSuccessMessage("Propiedad registrada exitosamente.");
       await loadPropiedades();
     } catch (err) {
       setSubmitError(err?.message || "No fue posible registrar la propiedad.");
@@ -73,7 +76,7 @@ export function PropiedadesPage() {
             Modulo de visualizacion de propiedades.
           </p>
 
-          <button 
+          <button
             className="rounded-xl bg-brand-secondary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
             onClick={() => setIsModalOpen(true)}
           >
@@ -199,7 +202,7 @@ export function PropiedadesPage() {
         onClose={() => {
           if (!saving) {
             setIsModalOpen(false);
-            setSubmitError("");
+            setSubmitError("Ocurrio un error durante el registro de la nueva propiedad.");
           }
         }}
         onSubmit={handleCreatePropiedad}
@@ -210,6 +213,21 @@ export function PropiedadesPage() {
         isOpen={isModalDetailsOpen}
         onClose={() => setIsModalDetailsOpen(false)}
         propiedad={selectedPropiedad}
+      />
+
+      <AlertModal
+        isOpen={Boolean(successMessage)}
+        type="success"
+        message={successMessage}
+        onClose={() => setSuccessMessage("")}
+        autoCloseMs={3000}
+      />
+
+      <AlertModal
+        isOpen={Boolean(submitError)}
+        type="error"
+        message={submitError}
+        onClose={() => setSubmitError("")}
       />
     </>
   );

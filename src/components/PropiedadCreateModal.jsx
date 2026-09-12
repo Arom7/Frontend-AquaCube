@@ -146,7 +146,7 @@ export function PropiedadCreateModal({
                                 Conexion y costos
                             </h4>
                         </div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             <PropiedadCreateField
                                 id="precio_conexion"
                                 name="precio_conexion"
@@ -155,12 +155,13 @@ export function PropiedadCreateModal({
                                 onChange={handleChange}
                                 placeholder="Ej. 100"
                                 error={errors.precio_conexion}
+                                disabled={form.is_lote}
                             />
 
                             <PropiedadCreateField
                                 id="fecha_conexion"
                                 name="fecha_conexion"
-                                label="Fecha de conexion"
+                                label="Fecha conexion"
                                 type="date"
                                 value={form.fecha_conexion}
                                 onChange={handleChange}
@@ -168,27 +169,39 @@ export function PropiedadCreateModal({
                                 optional
                                 disabled={form.is_lote}
                             />
+
+                            <PropiedadCreateField
+                                id="total_multas"
+                                name="total_multas"
+                                label="Total de multas a pagar"
+                                value={form.total_multas}
+                                onChange={handleChange}
+                                error={errors.total_multas}
+                                placeholder="Ej. 50"
+                            />
                         </div>
 
                         <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
-                            <div className="flex items-start gap-2">
-                                <Calendar className="mt-0.5 h-4 w-4 flex-none text-slate-400" />
-                                <div>
-                                    <p className="text-sm font-medium text-slate-700">Es un lote</p>
-                                    <p className="text-xs text-slate-500">
-                                        Activa esta opcion si la propiedad no cuenta con fecha de conexion.
-                                    </p>
+                            <div className="mt-3 flex items-center justify-between gap-2">
+                                <div className="flex items-start gap-2">
+                                    <Calendar className="mt-0.5 h-4 w-4 flex-none text-slate-400" />
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-700">Es un lote</p>
+                                        <p className="text-xs text-slate-500">
+                                            Activa esta opcion si la propiedad no cuenta con fecha de conexion.
+                                        </p>
+                                    </div>
                                 </div>
+                                <PropiedadCreateField
+                                    id="is_lote"
+                                    name="is_lote"
+                                    type="switch"
+                                    value={form.is_lote}
+                                    onChange={handleChange}
+                                    error={errors.is_lote}
+                                    className="flex-none"
+                                />
                             </div>
-                            <PropiedadCreateField
-                                id="is_lote"
-                                name="is_lote"
-                                type="switch"
-                                value={form.is_lote}
-                                onChange={handleChange}
-                                error={errors.is_lote}
-                                className="flex-none"
-                            />
                         </div>
                     </section>
                 </form>
